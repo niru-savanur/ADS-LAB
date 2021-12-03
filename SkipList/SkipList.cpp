@@ -55,6 +55,7 @@ Node* SkipList::createNode(int key, int level){
     return n;
 };
   
+
 // INSERT FUNCTION
 void SkipList::insertElement(int key){
     Node *current = header;
