@@ -30,12 +30,7 @@ class DisjointUnionSets
 	{
 		if (parent[x] != x)
 		{
-			// if x is not the parent of itself,
-			// then x is not the representative of
-			// its set.
-			// so we recursively call Find on its parent
-			// and move i's node directly under the
-			// representative of this set
+			
 			parent[x]=find(parent[x]);
 		}
 
