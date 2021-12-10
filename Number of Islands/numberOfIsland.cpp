@@ -1,52 +1,162 @@
-#include<bits/stdc++.h>
 
-#define ROW 5
-#define COL 5
+#include <bits/stdc++.h>
 using namespace std;
 
-int isSafe(int M[][COL], int row, int col, bool visited[][COL])
+
+class DisjointUnionSets
 {
-	return (row >= 0) && (row < ROW) && (col >= 0) && (col < COL) && (M[row][col] && !visited[row][col]);
-}
+	
+	vector<int> rank, parent;
+	int n;
+	
+	public:
+	DisjointUnionSets(int n)
+	{
+		rank.resize(n);
+		parent.resize(n);
+		this->n = n;
+		makeSet();
+	}
 
-void DFS(int M[][COL], int row, int col, bool visited[][COL])
+	void makeSet()
+	{
+		
+		for (int i = 0; i < n; i++)
+			parent[i] = i;
+	}
+
+	
+	int find(int x)
+	{
+		if (parent[x] != x)
+		{
+			// if x is not the parent of itself,
+			// then x is not the representative of
+			// its set.
+			// so we recursively call Find on its parent
+			// and move i's node directly under the
+			// representative of this set
+			parent[x]=find(parent[x]);
+		}
+
+		return parent[x];
+	}
+
+	
+	void Union(int x, int y)
+	{
+		
+		int xRoot = find(x);
+		int yRoot = find(y);
+
+		
+		if (xRoot == yRoot)
+			return;
+
+		
+		
+		if (rank[xRoot] < rank[yRoot])
+			parent[xRoot] = yRoot;
+
+		
+		else if (rank[yRoot] < rank[xRoot])
+			parent[yRoot] = xRoot;
+
+		else 
+		{
+			
+			parent[yRoot] = xRoot;
+
+			
+			rank[xRoot] = rank[xRoot] + 1;
+		}
+	}
+};
+
+
+int countIslands(vector<vector<int>>a)
 {
-	static int rowNbr[] = { -1, -1, -1, 0, 0, 1, 1, 1 };
-	static int colNbr[] = { -1, 0, 1, -1, 1, -1, 0, 1 };
+	int n = a.size();
+	int m = a[0].size();
 
-	visited[row][col] = true;
+	DisjointUnionSets *dus = new DisjointUnionSets(n * m);
 
-	for (int k = 0; k < 8; ++k)
-		if (isSafe(M, row + rowNbr[k], col + colNbr[k], visited))
-			DFS(M, row + rowNbr[k], col + colNbr[k], visited);
-}
+	
+	for (int j = 0; j < n; j++)
+	{
+		for (int k = 0; k < m; k++)
+		{
+			
+			if (a[j][k] == 0)
+				continue;
 
-int countIslands(int M[][COL])
-{
-	bool visited[ROW][COL];
-	memset(visited, 0, sizeof(visited));
+			
+			if (j + 1 < n && a[j + 1][k] == 1)
+				dus->Union(j * (m) + k,
+						(j + 1) * (m) + k);
+			if (j - 1 >= 0 && a[j - 1][k] == 1)
+				dus->Union(j * (m) + k,
+						(j - 1) * (m) + k);
+			if (k + 1 < m && a[j][k + 1] == 1)
+				dus->Union(j * (m) + k,
+						(j) * (m) + k + 1);
+			if (k - 1 >= 0 && a[j][k - 1] == 1)
+				dus->Union(j * (m) + k,
+						(j) * (m) + k - 1);
+			if (j + 1 < n && k + 1 < m &&
+					a[j + 1][k + 1] == 1)
+				dus->Union(j * (m) + k,
+						(j + 1) * (m) + k + 1);
+			if (j + 1 < n && k - 1 >= 0 &&
+					a[j + 1][k - 1] == 1)
+				dus->Union(j * m + k,
+						(j + 1) * (m) + k - 1);
+			if (j - 1 >= 0 && k + 1 < m &&
+					a[j - 1][k + 1] == 1)
+				dus->Union(j * m + k,
+						(j - 1) * m + k + 1);
+			if (j - 1 >= 0 && k - 1 >= 0 &&
+					a[j - 1][k - 1] == 1)
+				dus->Union(j * m + k,
+						(j - 1) * m + k - 1);
+		}
+	}
 
-	int count = 0;
-	for (int i = 0; i < ROW; ++i)
-		for (int j = 0; j < COL; ++j)
-			if (M[i][j] && !visited[i][j])
+	
+	int *c = new int[n * m];
+	int numberOfIslands = 0;
+	for (int j = 0; j < n; j++)
+	{
+		for (int k = 0; k < m; k++)
+		{
+			if (a[j][k] == 1)
 			{
-				DFS(M, i, j, visited);
-				++count;
+				int x = dus->find(j * m + k);
+
+			
+				if (c[x] == 0)
+				{
+					numberOfIslands++;
+					c[x]++;
+				}
+
+				else
+					c[x]++;
 			}
-
-	return count;
+		}
+	}
+	return numberOfIslands;
 }
 
-int main()
+
+int main(void)
 {
-	int M[][COL] = { { 1, 1, 0, 0, 0 },
-					{ 0, 1, 0, 0, 1 },
-					{ 1, 0, 0, 1, 1 },
-					{ 0, 0, 0, 0, 0 },
-					{ 1, 0, 1, 0, 1 } };
-    cout << "Number of islands is: " << countIslands(M) << endl;
-	// printf("Number of islands is: %d\n", countIslands(M));
-
-	return 0;
+	vector<vector<int>>a = {{1, 1, 0, 0, 0},
+							{0, 1, 0, 0, 1},
+							{1, 0, 0, 1, 1},
+							{0, 0, 0, 0, 0},
+							{1, 0, 1, 0, 1}};
+	cout << "Number of Islands is: "
+		<< countIslands(a) << endl;
 }
+
